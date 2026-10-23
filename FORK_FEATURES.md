@@ -78,6 +78,19 @@ entry to "Retired".
   internal/ui/mode_normal.go (hook)
 - Upstream-watch: next section, previous section, jump section, jump category
 
+## nav-history-keys: `ctrl+o` goes back and `ctrl+i` goes forward
+- Status: active
+- Added: 2026-10-23
+- Summary: Vim-style aliases for navigation history. `ctrl+o` is added to
+  `ctrl+h` (back) and `ctrl+i` to `ctrl+l` / `ctrl+k` (forward); the originals
+  still work and the help overlay lists the new keys. `ctrl+i` is a distinct
+  key only in terminals with key disambiguation (kitty protocol: kitty,
+  ghostty, wezterm, recent iTerm2 and others); elsewhere it arrives as Tab,
+  which keeps its "next panel" meaning.
+- Files: internal/ui/keys.go (two bindings), internal/ui/nav_keys_fork_test.go,
+  internal/ui/mode_help_test.go (pinned help label updated)
+- Upstream-watch: ctrl+o, ctrl+i, jump list, navigate back, nav history key
+
 ## Retired
 
 None.

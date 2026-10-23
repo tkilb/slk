@@ -148,10 +148,10 @@ func DefaultKeyMap() KeyMap {
 		ThemePrev:           key.NewBinding(key.WithKeys("alt+shift+y", "alt+Y", "alt+shift+Y"), key.WithHelp("alt+shift+y", "prev theme (per workspace)")),
 		PresenceMenu:        key.NewBinding(key.WithKeys("ctrl+s"), key.WithHelp("ctrl+s", "set status")),
 		ToggleSection:       key.NewBinding(key.WithKeys("space"), key.WithHelp("space", "toggle section")),
-		NavBack:             key.NewBinding(key.WithKeys("ctrl+h"), key.WithHelp("ctrl+h", "navigate back")),
+		NavBack:             key.NewBinding(key.WithKeys("ctrl+h", "ctrl+o"), key.WithHelp("ctrl+h / ctrl+o", "navigate back")), // fork: ctrl+o
 		// ctrl+k was the original forward key. It stays bound for
 		// existing users but is left out of the help overlay.
-		NavForward:     key.NewBinding(key.WithKeys("ctrl+l", "ctrl+k"), key.WithHelp("ctrl+l", "navigate forward")),
+		NavForward:     key.NewBinding(key.WithKeys("ctrl+l", "ctrl+k", "ctrl+i"), key.WithHelp("ctrl+l / ctrl+i", "navigate forward")), // fork: ctrl+i (needs a terminal with key disambiguation, else it is Tab)
 		Help:           key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "show keybindings")),
 		SaveThread:     key.NewBinding(key.WithKeys("S"), key.WithHelp("S", "save thread")),
 		RespondButtons: key.NewBinding(key.WithKeys("b"), key.WithHelp("b", "respond to message buttons")),

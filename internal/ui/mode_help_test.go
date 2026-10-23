@@ -41,8 +41,9 @@ func TestHelpShowsCtrlLForNavForward(t *testing.T) {
 		if e.Desc != "navigate forward" {
 			continue
 		}
-		if e.Key != "ctrl+l" {
-			t.Errorf("navigate forward help key = %q, want %q", e.Key, "ctrl+l")
+		// fork: ctrl+i is advertised next to ctrl+l (nav-history-keys).
+		if e.Key != "ctrl+l / ctrl+i" {
+			t.Errorf("navigate forward help key = %q, want %q", e.Key, "ctrl+l / ctrl+i")
 		}
 		return
 	}
