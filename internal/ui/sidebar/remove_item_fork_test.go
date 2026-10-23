@@ -60,3 +60,43 @@ func TestRemoveItem_LeavesOtherCursorsAlone(t *testing.T) {
 		t.Errorf("cursor on another row must stay put, got %q", got)
 	}
 }
+
+func TestRemoveItem_LastRowOfASectionStaysInTheSectionAndGoesUp(t *testing.T) {
+	m := unfocusedCollapseModel() // Direct Messages (D1, D2), then Channels (C1, C2)
+	m.SetFocused(true)
+	m.SelectByID("D2")
+	m.RemoveItem("D2")
+	if got := m.SelectedID(); got != "D1" {
+		t.Errorf("cursor should go to the row above (D1), got %q", got)
+	}
+}
+
+func TestRemoveItem_OnlyRowOfASectionStepsToTheRowAboveIt(t *testing.T) {
+	m := New([]ChannelItem{
+		{ID: "D1", Name: "alice", Type: "dm"},
+		{ID: "C1", Name: "general", Type: "channel"},
+	})
+	m.SetCollapseWhenUnfocused(true)
+	m.SetFocused(true)
+	m.SelectByID("D1")
+	m.RemoveItem("D1") // the Direct Messages section disappears with it
+	if !m.IsActivitySelected() {
+		t.Errorf("cursor should step to the row above the vanished section (Activity), not into Channels")
+	}
+}
+
+func TestRemoveItem_MiddleRowKeepsTheCursorInTheSection(t *testing.T) {
+	m := New([]ChannelItem{
+		{ID: "D1", Name: "alice", Type: "dm"},
+		{ID: "D2", Name: "bob", Type: "dm"},
+		{ID: "D3", Name: "carol", Type: "dm"},
+		{ID: "C1", Name: "general", Type: "channel"},
+	})
+	m.SetCollapseWhenUnfocused(true)
+	m.SetFocused(true)
+	m.SelectByID("D2")
+	m.RemoveItem("D2")
+	if got := m.SelectedID(); got != "D3" {
+		t.Errorf("cursor should move to the row below (D3), got %q", got)
+	}
+}
