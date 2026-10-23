@@ -98,3 +98,13 @@ func TestChannelSearchNKeysUnaffectedByThreadSearch(t *testing.T) {
 		t.Errorf("n on the messages pane must not touch the thread search")
 	}
 }
+
+func TestThreadSearchPromptIsStaleAfterFocusMoves(t *testing.T) {
+	a := threadSearchApp(t)
+	a.Update(keyPress('/'))
+	a.focusedPanel = PanelMessages // e.g. a mouse click
+	a.Update(keyPress('x'))
+	if a.mode != ModeNormal || a.threadPanel.SearchActive() {
+		t.Errorf("mode=%v active=%v, want normal and no search", a.mode, a.threadPanel.SearchActive())
+	}
+}

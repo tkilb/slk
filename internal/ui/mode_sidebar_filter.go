@@ -16,6 +16,12 @@ import (
 )
 
 func handleSidebarFilterMode(a *App, msg tea.KeyMsg) tea.Cmd {
+	if a.focusedPanel != PanelSidebar {
+		// Focus moved by a non-key path (a mouse click): the prompt is stale.
+		a.restoreSearchSegment()
+		a.SetMode(ModeNormal)
+		return handleNormalMode(a, msg)
+	}
 	switch {
 	case key.Matches(msg, a.keys.Escape):
 		a.sidebar.ClearFilter()
@@ -27,20 +33,9 @@ func handleSidebarFilterMode(a *App, msg tea.KeyMsg) tea.Cmd {
 		a.SetMode(ModeNormal)
 		return nil
 	}
-	query := a.sidebar.Filter()
-	switch s := normalizeFinderKey(msg); s {
-	case "backspace":
-		if r := []rune(query); len(r) > 0 {
-			query = string(r[:len(r)-1])
-		}
-	case "space":
-		query += " "
-	default:
-		// Single printable rune only, as in handleSearchMode.
-		if len([]rune(s)) != 1 {
-			return nil
-		}
-		query += s
+	query, ok := editQuery(a.sidebar.Filter(), msg)
+	if !ok {
+		return nil
 	}
 	a.sidebar.SetFilter(query)
 	a.sidebar.SelectFirstChannel()

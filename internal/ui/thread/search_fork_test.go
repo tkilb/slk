@@ -129,3 +129,30 @@ func TestSetSearch_EmptyQueryIsInactive(t *testing.T) {
 		t.Errorf("a blank query should clear the search")
 	}
 }
+
+func TestStepSearch_SurvivesReplyRemoval(t *testing.T) {
+	m := searchThread()
+	m.SetSearch("deploy") // parent, 12.0, 14.0
+	m.RemoveMessageByTS("12.0")
+	if i, n := m.StepSearch(-1); n != 2 || selectedTS(m) != "10.0" || i != 1 {
+		t.Errorf("after removal: idx=%d n=%d ts=%q, want 1/2 on the parent", i, n, selectedTS(m))
+	}
+}
+
+func TestSetThread_SameThreadKeepsSearch(t *testing.T) {
+	m := searchThread()
+	m.SetSearch("deploy")
+	m.SetThread(m.ParentMsg(), m.Replies(), "C1", "10.0") // a refresh
+	if !m.SearchActive() || m.SearchQuery() != "deploy" {
+		t.Errorf("refreshing the open thread must keep its search")
+	}
+}
+
+func TestSearchStatus_ZeroWhenCursorOffMatches(t *testing.T) {
+	m := searchThread()
+	m.SetSearch("deploy")
+	m.SelectByIndex(0) // 11.0, not a match
+	if i, n := m.SearchStatus(); i != 0 || n != 3 {
+		t.Errorf("status = %d/%d, want 0/3", i, n)
+	}
+}

@@ -11,11 +11,29 @@ import (
 
 // threadSearch is the client-side search state (fork feature thread-search).
 // Matching is local: it covers the parent and the replies already loaded.
+// Only the query is stored; matches are recomputed on demand from the live
+// replies, so deletes, edits and new replies never leave stale indices.
 type threadSearch struct {
-	query   string
-	terms   []string // folded, highlighted by the renderer
-	matches []int    // selection positions (parentSelected or a reply index), ascending
-	idx     int      // index into matches of the current match
+	query string
+	terms []string // folded, highlighted by the renderer
+}
+
+// matchPositions returns the selection positions (parentSelected or a reply
+// index, ascending) of every message matching the active terms.
+func (m *Model) matchPositions() []int {
+	var out []int
+	if len(m.search.terms) == 0 {
+		return out
+	}
+	if m.parent.TS != "" && m.messageMatches(m.parent, m.search.terms) {
+		out = append(out, parentSelected)
+	}
+	for i, r := range m.replies {
+		if m.messageMatches(r, m.search.terms) {
+			out = append(out, i)
+		}
+	}
+	return out
 }
 
 // SetSearch starts or updates the search and returns the match count. A
@@ -30,52 +48,57 @@ func (m *Model) SetSearch(query string) int {
 		m.ClearSearch()
 		return 0
 	}
-	s := threadSearch{query: query, terms: terms}
-	if m.parent.TS != "" && m.messageMatches(m.parent, terms) {
-		s.matches = append(s.matches, parentSelected)
-	}
-	for i, r := range m.replies {
-		if m.messageMatches(r, terms) {
-			s.matches = append(s.matches, i)
+	m.search = threadSearch{query: query, terms: terms}
+	matches := m.matchPositions()
+	if len(matches) > 0 {
+		target := matches[0]
+		for _, pos := range matches {
+			if pos >= m.selected {
+				target = pos
+				break
+			}
 		}
-	}
-	for i, pos := range s.matches {
-		if pos >= m.selected {
-			s.idx = i
-			break
-		}
-	}
-	m.search = s
-	if len(s.matches) > 0 {
-		m.selectPosition(s.matches[s.idx])
+		m.selectPosition(target)
 	}
 	m.InvalidateCache()
-	return len(s.matches)
+	return len(matches)
 }
 
-// StepSearch moves to the next (dir > 0) or previous match, wrapping, and
-// returns the 1-based position and the match count. With no matches it
-// returns 0, 0.
+// StepSearch moves to the next (dir > 0) or previous match relative to the
+// cursor, wrapping, and returns the 1-based position and the match count.
+// With no matches it returns 0, 0.
 func (m *Model) StepSearch(dir int) (idx, count int) {
-	n := len(m.search.matches)
-	if n == 0 {
+	matches := m.matchPositions()
+	if len(matches) == 0 {
 		return 0, 0
 	}
-	step := 1
+	target := matches[0] // forward wrap
 	if dir < 0 {
-		step = -1
+		target = matches[len(matches)-1] // backward wrap
 	}
-	m.search.idx = (m.search.idx + step + n) % n
-	m.selectPosition(m.search.matches[m.search.idx])
-	return m.search.idx + 1, n
+	for _, pos := range matches {
+		if dir > 0 && pos > m.selected {
+			target = pos
+			break
+		}
+		if dir < 0 && pos < m.selected {
+			target = pos
+		}
+	}
+	m.selectPosition(target)
+	return m.SearchStatus()
 }
 
-// SearchStatus returns the 1-based current match and the match count.
+// SearchStatus returns the cursor's 1-based position among the matches and
+// the match count. idx is 0 when the cursor is not on a match.
 func (m *Model) SearchStatus() (idx, count int) {
-	if len(m.search.matches) == 0 {
-		return 0, 0
+	matches := m.matchPositions()
+	for i, pos := range matches {
+		if pos == m.selected {
+			return i + 1, len(matches)
+		}
 	}
-	return m.search.idx + 1, len(m.search.matches)
+	return 0, len(matches)
 }
 
 // SearchQuery returns the active query as typed ("" when none).
@@ -105,7 +128,9 @@ func (m *Model) messageMatches(msg messages.MessageItem, terms []string) bool {
 		name, ok := m.userNames[id]
 		return name, ok
 	}
-	folded := text.Fold(messages.FlattenMrkdwn(msg.Text, resolve, nil))
+	// The text the renderer draws (rich_text blocks reconstructed), with
+	// user groups resolved, so what the user sees is what matches.
+	folded := text.Fold(messages.FlattenMrkdwnWithUserGroups(messages.MessageTextSource(msg), resolve, nil, m.userGroups))
 	for _, t := range terms {
 		if !hasWordPrefix(folded, t) {
 			return false

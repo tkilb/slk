@@ -208,6 +208,7 @@ func (a *App) tryOpenActionPrompt() tea.Cmd {
 			return a.toastActionWaiting(ref)
 		}
 		if a.mode == ModeCommand || a.mode == ModeSearch ||
+			a.mode == ModeSidebarFilter || a.mode == ModeThreadSearch ||
 			(a.mode == ModeInsert && a.focusedComposerValue() != "") {
 			return a.toastActionWaiting(ref)
 		}

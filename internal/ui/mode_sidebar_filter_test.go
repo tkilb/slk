@@ -108,3 +108,14 @@ func TestSidebarFilterClearsWhenFocusLeaves(t *testing.T) {
 		t.Errorf("filter should clear on blur, got %q", a.sidebar.Filter())
 	}
 }
+
+func TestSidebarFilterPromptIsStaleAfterFocusMoves(t *testing.T) {
+	a := sidebarFilterApp(t)
+	a.Update(keyPress('/'))
+	a.focusedPanel = PanelMessages // e.g. a mouse click
+	a.View()
+	a.Update(keyPress('x'))
+	if a.mode != ModeNormal || a.sidebar.Filter() != "" {
+		t.Errorf("mode=%v filter=%q, want normal and no filter", a.mode, a.sidebar.Filter())
+	}
+}

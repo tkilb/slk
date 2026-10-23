@@ -253,9 +253,9 @@ func (m *Model) HandleAvatarReady(userID string) {
 func (m *Model) SetThread(parent messages.MessageItem, replies []messages.MessageItem, channelID, threadTS string) {
 	if channelID != m.channelID || threadTS != m.threadTS {
 		m.unreadBoundaryTS = ""
+		m.search = threadSearch{} // fork: a refresh of the same thread keeps its search
 	}
 	m.ClearSelection()
-	m.search = threadSearch{}
 	m.parent = parent
 	m.replies = replies
 	m.channelID = channelID

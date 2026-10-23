@@ -567,9 +567,6 @@ func (m *Model) SetFocused(focused bool) {
 			m.rebuildFilter()
 		}
 		m.rebuildNavWithCursor(key, hadKey)
-		if !focused {
-			m.returnCursorToActiveRow(key, hadKey)
-		}
 	}
 	m.cacheValid = false
 	m.dirty()
@@ -797,9 +794,6 @@ func (m *Model) SetCollapseWhenUnfocused(on bool) {
 	key, hadKey := m.currentCursorKey()
 	m.collapseUnfocused = on
 	m.rebuildNavWithCursor(key, hadKey)
-	if on && !m.focused {
-		m.returnCursorToActiveRow(key, hadKey)
-	}
 	m.cacheValid = false
 	m.dirty()
 }
@@ -814,27 +808,11 @@ func (m *Model) rowShown(section, channelID string) bool {
 	return m.collapseUnfocused && channelID != "" && channelID == m.activeID
 }
 
-// returnCursorToActiveRow is called after a collapse. When the cursor's
-// previous target vanished (rebuildNavWithCursor fell back to Threads), it
-// moves the cursor to the active channel's row if that is listed, so the
-// next focus starts where the user is reading.
-func (m *Model) returnCursorToActiveRow(key cursorKey, hadKey bool) {
-	if !hadKey || key.kind != navChannel || m.cursor != 0 {
-		return
-	}
-	for i, n := range m.nav {
-		if n.kind == navChannel && m.items[m.filtered[n.fi]].ID == m.activeID {
-			m.cursor = i
-			return
-		}
-	}
-}
-
 // ToggleCollapseSelected toggles the section currently under the cursor.
 // No-op if the cursor isn't on a section header.
 func (m *Model) ToggleCollapseSelected() bool {
 	name, ok := m.IsSectionHeaderSelected()
-	if !ok {
+	if !ok || m.collapseUnfocused {
 		return false
 	}
 	m.ToggleCollapse(name)
@@ -1571,7 +1549,17 @@ func (m *Model) rebuildNavWithCursor(key cursorKey, hadKey bool) {
 		}
 	}
 	// Previous target gone (e.g. the channel was filtered out, or its
-	// section now collapsed). Fall back to the Threads row.
+	// section now collapsed). A collapsed, unfocused sidebar falls back to
+	// the active channel's row, so the next focus starts where the user is
+	// reading; otherwise to the Threads row.
+	if m.collapseUnfocused && !m.focused && key.kind == navChannel {
+		for i, n := range m.nav {
+			if n.kind == navChannel && m.items[m.filtered[n.fi]].ID == m.activeID {
+				m.cursor = i
+				return
+			}
+		}
+	}
 	m.cursor = 0
 }
 

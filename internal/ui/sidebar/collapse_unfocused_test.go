@@ -106,3 +106,26 @@ func TestCollapseWhenUnfocused_DisabledLeavesBehaviorAlone(t *testing.T) {
 		t.Errorf("without the mode, an unfocused sidebar must not collapse")
 	}
 }
+
+func TestCollapseWhenUnfocused_CursorFollowsNewActiveChannel(t *testing.T) {
+	m := unfocusedCollapseModel()
+	m.SetFocused(true)
+	m.SelectByID("D1")
+	m.SetActiveChannelID("D1")
+	m.SetFocused(false)        // cursor stays on the visible, active D1 row
+	m.SetActiveChannelID("D2") // switched from the finder while unfocused
+	m.SetFocused(true)
+	if got := m.SelectedID(); got != "D2" {
+		t.Errorf("cursor should land on the new active channel, got %q", got)
+	}
+}
+
+func TestCollapseWhenUnfocused_ToggleSelectedReportsNoOp(t *testing.T) {
+	m := unfocusedCollapseModel()
+	m.SetFocused(true)
+	m.MoveDown()
+	m.MoveDown()
+	if m.ToggleCollapseSelected() {
+		t.Errorf("ToggleCollapseSelected must report false when it does nothing")
+	}
+}

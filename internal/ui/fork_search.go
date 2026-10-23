@@ -6,6 +6,8 @@
 // (channel search on the messages pane).
 package ui
 
+import tea "charm.land/bubbletea/v2"
+
 // forkSlashSearch routes `/` by the focused panel.
 func (a *App) forkSlashSearch() bool {
 	switch a.focusedPanel {
@@ -49,4 +51,25 @@ func (a *App) forkSearchStep(dir int) bool {
 	a.threadPanel.StepSearch(dir)
 	a.statusbar.SetSearch(a.threadSearchSegment())
 	return true
+}
+
+// editQuery applies one key press to a prompt's query: backspace deletes the
+// last rune, space and a single printable rune are appended. ok is false for
+// keys the prompt ignores (multi-rune graphemes, unmapped keys). Shared by the
+// sidebar filter and thread search prompts.
+func editQuery(query string, msg tea.KeyMsg) (string, bool) {
+	switch s := normalizeFinderKey(msg); s {
+	case "backspace":
+		if r := []rune(query); len(r) > 0 {
+			query = string(r[:len(r)-1])
+		}
+	case "space":
+		query += " "
+	default:
+		if len([]rune(s)) != 1 {
+			return query, false
+		}
+		query += s
+	}
+	return query, true
 }

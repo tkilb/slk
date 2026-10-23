@@ -14,6 +14,12 @@ import (
 )
 
 func handleThreadSearchMode(a *App, msg tea.KeyMsg) tea.Cmd {
+	if a.focusedPanel != PanelThread || a.threadPanel.IsEmpty() {
+		// The thread closed or focus moved by a non-key path: the prompt is stale.
+		a.restoreSearchSegment()
+		a.SetMode(ModeNormal)
+		return handleNormalMode(a, msg)
+	}
 	switch {
 	case key.Matches(msg, a.keys.Escape):
 		a.threadPanel.ClearSearch()
@@ -29,19 +35,9 @@ func handleThreadSearchMode(a *App, msg tea.KeyMsg) tea.Cmd {
 		a.SetMode(ModeNormal)
 		return nil
 	}
-	query := a.threadPanel.SearchQuery()
-	switch s := normalizeFinderKey(msg); s {
-	case "backspace":
-		if r := []rune(query); len(r) > 0 {
-			query = string(r[:len(r)-1])
-		}
-	case "space":
-		query += " "
-	default:
-		if len([]rune(s)) != 1 {
-			return nil
-		}
-		query += s
+	query, ok := editQuery(a.threadPanel.SearchQuery(), msg)
+	if !ok {
+		return nil
 	}
 	a.threadPanel.SetSearch(query)
 	if a.threadPanel.SearchActive() {
@@ -56,8 +52,11 @@ func handleThreadSearchMode(a *App, msg tea.KeyMsg) tea.Cmd {
 // "/query  i/N", or "/query  no matches".
 func (a *App) threadSearchSegment() string {
 	idx, n := a.threadPanel.SearchStatus()
-	if n == 0 {
+	switch {
+	case n == 0:
 		return "/" + a.threadPanel.SearchQuery() + "  no matches"
+	case idx == 0: // the cursor moved off the matches
+		return fmt.Sprintf("/%s  %d matches", a.threadPanel.SearchQuery(), n)
 	}
 	return fmt.Sprintf("/%s  %d/%d", a.threadPanel.SearchQuery(), idx, n)
 }
