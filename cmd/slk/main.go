@@ -330,6 +330,7 @@ func run() error {
 	app.SetSixelFrameStore(sixelFrames)
 	app.SetClipboardAvailable(clipboardOK)
 	app.SetClipboardWriter(newClipboardWriter(runtime.GOOS, os.Getenv, writeMacOSClipboard))
+	app.SetSidebarCollapseWhenUnfocused(true) // fork: sidebar-focus-collapse
 	desktop := core.DesktopServiceFuncs{
 		Open:          launchOS,
 		ReadClipboard: nativeClipboardRead,

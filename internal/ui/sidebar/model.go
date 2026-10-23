@@ -355,6 +355,13 @@ type Model struct {
 	// compete visually with the focused panel. Set by SetFocused() from
 	// the App layer.
 	focused bool
+
+	// collapseUnfocused (fork feature sidebar-focus-collapse) collapses
+	// every section whenever the sidebar is unfocused and expands every
+	// section while it is focused. It replaces the manual collapse state,
+	// which is then ignored; the active channel's row stays visible while
+	// collapsed. Set via SetCollapseWhenUnfocused.
+	collapseUnfocused bool
 }
 
 // SetSectionsProvider injects a Slack-native sections data source.
@@ -551,7 +558,14 @@ func (m *Model) SetFocused(focused bool) {
 	if m.focused == focused {
 		return
 	}
+	key, hadKey := m.currentCursorKey()
 	m.focused = focused
+	if m.collapseUnfocused {
+		m.rebuildNavWithCursor(key, hadKey)
+		if !focused {
+			m.returnCursorToActiveRow(key, hadKey)
+		}
+	}
 	m.cacheValid = false
 	m.dirty()
 }
@@ -725,6 +739,9 @@ func (m *Model) IsSectionHeaderSelected() (name string, ok bool) {
 // collapseByID (so renames preserve state). In config mode, it's a
 // section name and lookup uses collapsed.
 func (m *Model) IsCollapsed(section string) bool {
+	if m.collapseUnfocused {
+		return !m.focused
+	}
 	if m.useSlackSections() {
 		if m.collapseByID == nil {
 			return false
@@ -742,6 +759,9 @@ func (m *Model) IsCollapsed(section string) bool {
 // subsequent toggle just expands again. Dispatches to collapseByID in
 // Slack mode (ID-keyed; survives renames), collapsed in config mode.
 func (m *Model) ToggleCollapse(section string) {
+	if m.collapseUnfocused {
+		return // focus decides; see SetCollapseWhenUnfocused
+	}
 	if m.useSlackSections() {
 		if m.collapseByID == nil {
 			m.collapseByID = map[string]bool{}
@@ -759,6 +779,50 @@ func (m *Model) ToggleCollapse(section string) {
 	m.rebuildNavPreserveCursor()
 	m.cacheValid = false
 	m.dirty()
+}
+
+// SetCollapseWhenUnfocused turns on the fork's focus-driven collapse: all
+// sections collapse while the sidebar is unfocused (keeping the active
+// channel's row) and expand while it is focused. Manual toggles become
+// no-ops, and collapse state persisted in the manual maps is ignored.
+func (m *Model) SetCollapseWhenUnfocused(on bool) {
+	if m.collapseUnfocused == on {
+		return
+	}
+	key, hadKey := m.currentCursorKey()
+	m.collapseUnfocused = on
+	m.rebuildNavWithCursor(key, hadKey)
+	if on && !m.focused {
+		m.returnCursorToActiveRow(key, hadKey)
+	}
+	m.cacheValid = false
+	m.dirty()
+}
+
+// rowShown reports whether a channel row in the section is listed. A
+// collapsed section hides its rows, except that the focus-driven collapse
+// keeps the active channel visible.
+func (m *Model) rowShown(section, channelID string) bool {
+	if !m.IsCollapsed(section) {
+		return true
+	}
+	return m.collapseUnfocused && channelID != "" && channelID == m.activeID
+}
+
+// returnCursorToActiveRow is called after a collapse. When the cursor's
+// previous target vanished (rebuildNavWithCursor fell back to Threads), it
+// moves the cursor to the active channel's row if that is listed, so the
+// next focus starts where the user is reading.
+func (m *Model) returnCursorToActiveRow(key cursorKey, hadKey bool) {
+	if !hadKey || key.kind != navChannel || m.cursor != 0 {
+		return
+	}
+	for i, n := range m.nav {
+		if n.kind == navChannel && m.items[m.filtered[n.fi]].ID == m.activeID {
+			m.cursor = i
+			return
+		}
+	}
 }
 
 // ToggleCollapseSelected toggles the section currently under the cursor.
@@ -1418,10 +1482,10 @@ func (m *Model) rebuildNav() {
 	nav = append(nav, navItem{kind: navActivity})
 	for _, name := range sectionOrder {
 		nav = append(nav, navItem{kind: navHeader, header: name})
-		if m.IsCollapsed(name) {
-			continue
-		}
 		for _, fi := range bucket[name] {
+			if !m.rowShown(name, m.items[m.filtered[fi]].ID) {
+				continue
+			}
 			nav = append(nav, navItem{kind: navChannel, fi: fi})
 		}
 	}
@@ -1752,7 +1816,7 @@ func (m *Model) buildCache(width int) {
 	for fi, idx := range m.filtered {
 		item := m.items[idx]
 		sectionName := m.sectionFor(item)
-		if m.IsCollapsed(sectionName) {
+		if !m.rowShown(sectionName, item.ID) {
 			continue
 		}
 		// Defense-in-depth: if sectionFor returns a section name that
