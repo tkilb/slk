@@ -337,7 +337,7 @@ Per the README: brainstorm the design first, write tests, then implement.
 Designs go to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`,
 implementation plans to `docs/superpowers/plans/`.
 
-Before opening a PR: `go build ./...`, `go vet ./...`, `go test ./... -race`,
+Before landing a change: `go build ./...`, `go vet ./...`, `go test ./... -race`,
 `gofmt -l .` empty.
 
 ## Fork notes (tkilb/slk)
@@ -346,6 +346,13 @@ Everything in this section is fork-only and sits at the end of the file so
 upstream edits to `AGENTS.md` rebase cleanly. This repository is a personal fork
 of `gammons/slk` (remote `upstream`). Custom features live on `main`, which is
 rebased onto `upstream/main`. Nothing is submitted back to upstream.
+
+**No pull requests, ever.** Do not open, suggest, or prepare a pull request or
+merge request, either to `gammons/slk` or on this fork. This overrides the
+README's contributing rules. Work on
+a feature branch, then land it by fast-forwarding `main` and pushing to
+`origin` (after the owner confirms). `upstream` is fetch-only: its push URL is
+set to `DISABLED`.
 
 - **Feature list:** `FORK_FEATURES.md` is the running list of fork-only
   features. Keep it current.
