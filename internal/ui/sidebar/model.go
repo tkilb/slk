@@ -357,11 +357,16 @@ type Model struct {
 	focused bool
 
 	// collapseUnfocused (fork feature sidebar-focus-collapse) collapses
-	// every section whenever the sidebar is unfocused and expands every
-	// section while it is focused. It replaces the manual collapse state,
-	// which is then ignored; the active channel's row stays visible while
-	// collapsed. Set via SetCollapseWhenUnfocused.
+	// every section whenever the sidebar is unfocused. While it is focused,
+	// only the section holding the cursor is expanded (all of them while a
+	// filter is active). It replaces the manual collapse state, which is
+	// then ignored; the active channel's row stays visible while its
+	// section is collapsed. Set via SetCollapseWhenUnfocused.
 	collapseUnfocused bool
+
+	// renderedSection is the section the cache was last built with
+	// expanded, so View can rebuild when the cursor crosses into another.
+	renderedSection string
 }
 
 // SetSectionsProvider injects a Slack-native sections data source.
@@ -742,7 +747,13 @@ func (m *Model) IsSectionHeaderSelected() (name string, ok bool) {
 // section name and lookup uses collapsed.
 func (m *Model) IsCollapsed(section string) bool {
 	if m.collapseUnfocused {
-		return !m.focused
+		if !m.focused {
+			return true
+		}
+		if m.filter != "" {
+			return false
+		}
+		return section != m.cursorSection()
 	}
 	if m.useSlackSections() {
 		if m.collapseByID == nil {
@@ -798,7 +809,34 @@ func (m *Model) SetCollapseWhenUnfocused(on bool) {
 	m.dirty()
 }
 
-// rowShown reports whether a channel row in the section is listed. A
+// cursorSection names the section the cursor is in: a header's own section or
+// a channel row's. It is "" on the Threads and Activity rows.
+func (m *Model) cursorSection() string {
+	if m.cursor < 0 || m.cursor >= len(m.nav) {
+		return ""
+	}
+	switch n := m.nav[m.cursor]; n.kind {
+	case navHeader:
+		return n.header
+	case navChannel:
+		if n.fi >= 0 && n.fi < len(m.filtered) {
+			return m.sectionFor(m.items[m.filtered[n.fi]])
+		}
+	}
+	return ""
+}
+
+// navRowShown reports whether a channel row is a navigation stop. A focused
+// sidebar keeps every row navigable (only the drawing collapses), so j/k walk
+// across sections in order and the row under the cursor is always drawn.
+func (m *Model) navRowShown(section, channelID string) bool {
+	if m.collapseUnfocused && m.focused {
+		return true
+	}
+	return m.rowShown(section, channelID)
+}
+
+// rowShown reports whether a channel row in the section is drawn. A
 // collapsed section hides its rows, except that the focus-driven collapse
 // keeps the active channel visible.
 func (m *Model) rowShown(section, channelID string) bool {
@@ -1500,7 +1538,7 @@ func (m *Model) rebuildNav() {
 	for _, name := range sectionOrder {
 		nav = append(nav, navItem{kind: navHeader, header: name})
 		for _, fi := range bucket[name] {
-			if !m.rowShown(name, m.items[m.filtered[fi]].ID) {
+			if !m.navRowShown(name, m.items[m.filtered[fi]].ID) {
 				continue
 			}
 			nav = append(nav, navItem{kind: navChannel, fi: fi})
@@ -1676,6 +1714,7 @@ func (m *Model) buildCache(width int) {
 	}
 	m.cacheValid = true
 	m.cacheWidth = width
+	m.renderedSection = m.cursorSection()
 	m.cacheRows = m.cacheRows[:0]
 	m.cacheFiller = lipgloss.NewStyle().Width(width).Background(styles.SidebarBackground).Render("")
 
@@ -2187,7 +2226,8 @@ func (m *Model) View(height, width int) string {
 	// Threads row is globally present (even on an empty workspace), so we
 	// always go through buildCache, which handles the empty-items case by
 	// emitting a muted "No channels" placeholder below the Threads row.
-	if !m.cacheValid || m.cacheWidth != width {
+	if !m.cacheValid || m.cacheWidth != width ||
+		(m.collapseUnfocused && m.focused && m.renderedSection != m.cursorSection()) {
 		m.buildCache(width)
 	}
 	m.lastHeight = height

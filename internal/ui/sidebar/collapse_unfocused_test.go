@@ -35,16 +35,72 @@ func TestCollapseWhenUnfocused_HidesRowsExceptActive(t *testing.T) {
 	}
 }
 
-func TestCollapseWhenUnfocused_FocusExpandsEverySection(t *testing.T) {
+func TestCollapseWhenUnfocused_FocusExpandsOnlyCursorSection(t *testing.T) {
 	m := unfocusedCollapseModel()
-	m.SetFocused(false)
-	m.SetFocused(true)
-
+	m.SetFocused(true) // cursor starts on Threads: no section is expanded
 	view := m.View(30, 30)
-	// "Channels" is collapsed by default; focus overrides that.
-	for _, shown := range []string{"general", "random", "alice", "bob"} {
+	for _, hidden := range []string{"general", "random", "alice", "bob"} {
+		if strings.Contains(view, hidden) {
+			t.Errorf("cursor on Threads: %q should be hidden:\n%s", hidden, view)
+		}
+	}
+
+	m.SelectByID("D1") // Direct Messages, which is not the default-expanded one
+	view = m.View(30, 30)
+	for _, shown := range []string{"alice", "bob"} {
 		if !strings.Contains(view, shown) {
-			t.Errorf("focused sidebar should show %q:\n%s", shown, view)
+			t.Errorf("cursor in Direct Messages: %q should show:\n%s", shown, view)
+		}
+	}
+	for _, hidden := range []string{"general", "random"} {
+		if strings.Contains(view, hidden) {
+			t.Errorf("cursor in Direct Messages: %q should be hidden:\n%s", hidden, view)
+		}
+	}
+
+	m.SelectByID("C1") // "Channels" is collapsed by default; the cursor overrides that
+	view = m.View(30, 30)
+	if !strings.Contains(view, "general") || !strings.Contains(view, "random") {
+		t.Errorf("cursor in Channels should expand it:\n%s", view)
+	}
+	if strings.Contains(view, "alice") {
+		t.Errorf("cursor in Channels should collapse Direct Messages:\n%s", view)
+	}
+}
+
+func TestCollapseWhenUnfocused_WalkingCrossesSectionsInOrder(t *testing.T) {
+	m := unfocusedCollapseModel()
+	m.SetFocused(true)
+	m.SelectByID("D2") // last row of the first section (Direct Messages)
+	m.View(30, 30)
+
+	m.MoveDown() // header of the next section (Channels)
+	if name, ok := m.IsSectionHeaderSelected(); !ok || name != "Channels" {
+		t.Fatalf("expected the Channels header after the last DM, got %q ok=%v", name, ok)
+	}
+	view := m.View(30, 30)
+	if !strings.Contains(view, "general") || strings.Contains(view, "alice") {
+		t.Errorf("crossing into Channels should swap which section is open:\n%s", view)
+	}
+
+	m.MoveUp() // back onto the last row of Direct Messages
+	if got := m.SelectedID(); got != "D2" {
+		t.Errorf("MoveUp should return to D2, got %q", got)
+	}
+	if view = m.View(30, 30); !strings.Contains(view, "bob") || strings.Contains(view, "general") {
+		t.Errorf("moving back should reopen Direct Messages and close Channels:\n%s", view)
+	}
+}
+
+func TestCollapseWhenUnfocused_FilterShowsEverySection(t *testing.T) {
+	m := unfocusedCollapseModel()
+	m.SetFocused(true)
+	m.SetFilter("a") // general, random, alice
+	m.SelectFirstChannel()
+	view := m.View(30, 30)
+	for _, shown := range []string{"general", "random", "alice"} {
+		if !strings.Contains(view, shown) {
+			t.Errorf("a filter should show matches in every section; missing %q:\n%s", shown, view)
 		}
 	}
 }

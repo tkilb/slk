@@ -29,9 +29,11 @@ entry to "Retired".
 - Status: active
 - Added: 2026-10-23
 - Summary: Every sidebar section is collapsed while the sidebar is unfocused
-  (the active channel row stays visible, headers keep their unread badges) and
-  expanded while the user cursors through it. Manual toggles are disabled in
-  this mode. The cursor returns to the active channel after a blur.
+  (the active channel row stays visible, headers keep their unread badges).
+  While it is focused, only the section holding the cursor is expanded, so
+  cursoring across sections opens one and closes the other; a filter shows
+  matches in every section. Manual toggles are disabled in this mode. The
+  cursor returns to the active channel after a blur.
 - Files: internal/ui/sidebar/model.go, internal/ui/sidebar/collapse_unfocused_test.go,
   internal/ui/fork_sidebar.go, cmd/slk/main.go
 - Upstream-watch: collapse sidebar, auto-collapse, sidebar focus, collapse sections
