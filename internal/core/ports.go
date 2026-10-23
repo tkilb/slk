@@ -271,6 +271,11 @@ type ChannelService interface {
 	// reducer can drop late results from cancelled submits.
 	OpenConversation(userIDs []string, requestID uint64) Cmd
 
+	// CloseConversation dispatches conversations.close for a DM or group
+	// DM (fork feature close-dm). Returns a Cmd whose resolved Msg is the
+	// UI's ConversationClosedResultMsg, carrying the error on failure.
+	CloseConversation(channelID ids.ChannelID) Cmd
+
 	// SearchRemote asks the server which channels match query,
 	// including ones the user has not joined, and blocks until it
 	// answers. Callers run it from a Cmd, debounced — see

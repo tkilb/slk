@@ -312,6 +312,7 @@ type ChannelServiceFuncs struct {
 	RecordVisit         ChannelVisitRecorder
 	MembershipFetch     func(channelID ids.ChannelID)
 	OpenConversation    func(userIDs []string, requestID uint64) Cmd
+	CloseConversation   func(channelID ids.ChannelID) Cmd
 	SearchRemote        func(query string) []ChannelFinderItem
 	MessagingCapability func(channelID ids.ChannelID) Cmd
 }
@@ -408,6 +409,13 @@ func (c channelAdapter) OpenConversation(userIDs []string, requestID uint64) Cmd
 		return nil
 	}
 	return c.fns.OpenConversation(userIDs, requestID)
+}
+
+func (c channelAdapter) CloseConversation(channelID ids.ChannelID) Cmd {
+	if c.fns.CloseConversation == nil {
+		return nil
+	}
+	return c.fns.CloseConversation(channelID)
 }
 
 func (c channelAdapter) MessagingCapability(channelID ids.ChannelID) Cmd {

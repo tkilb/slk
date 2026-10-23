@@ -1076,6 +1076,7 @@ func (a *App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		reduceWorkspace,
 		reduceTheme,
 		reduceNewMessagePicker,
+		reduceCloseConversation, // fork: close-dm
 		reduceUserProfile,
 		reduceIO,
 		reduceMouse,

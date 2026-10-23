@@ -65,7 +65,7 @@ var slashCommands = map[string]commandFunc{
 	"/msg":    slashMsg("/msg"),
 	"/dm":     slashMsg("/dm"),
 	"/leave":  slashUnsupported("/leave"),
-	"/close":  slashUnsupported("/close"),
+	"/close":  slashClose, // fork: close-dm
 	"/part":   slashUnsupported("/part"),
 }
 

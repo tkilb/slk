@@ -59,6 +59,7 @@ type SlackAPI interface {
 	GetDNDTeamInfoContext(ctx context.Context, users []string, options ...slack.ParamOption) (map[string]slack.DNDStatus, error)
 	UploadFileContext(ctx context.Context, params slack.UploadFileParameters) (*slack.FileSummary, error)
 	OpenConversationContext(ctx context.Context, params *slack.OpenConversationParameters) (*slack.Channel, bool, bool, error)
+	CloseConversationContext(ctx context.Context, channelID string) (noOp bool, alreadyClosed bool, err error) // fork: close-dm
 	GetConversationInfoContext(ctx context.Context, input *slack.GetConversationInfoInput) (*slack.Channel, error)
 }
 

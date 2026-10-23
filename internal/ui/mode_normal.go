@@ -253,6 +253,9 @@ func handleNormalMode(a *App, msg tea.KeyMsg) tea.Cmd {
 	case a.forkSectionJump(msg): // fork: sidebar-section-jump
 		return nil
 
+	case a.focusedPanel == PanelSidebar && key.Matches(msg, forkCloseConversation): // fork: close-dm
+		return a.closeSelectedConversation()
+
 	case key.Matches(msg, a.keys.ToggleSection):
 		// Space on a sidebar section header toggles its collapsed
 		// state; elsewhere it falls through to whatever the focused

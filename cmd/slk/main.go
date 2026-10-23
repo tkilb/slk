@@ -842,6 +842,7 @@ func run() error {
 					}
 				}
 			},
+			CloseConversation: closeConversationCmd(ctx, router.Active), // fork: close-dm
 			MessagingCapability: func(channelID ids.ChannelID) core.Cmd {
 				wctx := router.Active()
 				if wctx == nil || wctx.Client == nil {

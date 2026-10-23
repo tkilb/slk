@@ -151,6 +151,7 @@ type mockSlackAPI struct {
 	uploadFileContextFn             func(ctx context.Context, params slack.UploadFileParameters) (*slack.FileSummary, error)
 	getUsersInConversationContextFn func(ctx context.Context, params *slack.GetUsersInConversationParameters) ([]string, string, error)
 	openConversationContextFn       func(ctx context.Context, params *slack.OpenConversationParameters) (*slack.Channel, bool, bool, error)
+	closeConversationContextFn      func(ctx context.Context, channelID string) (bool, bool, error)
 	searchMessagesFn                func(ctx context.Context, query string, params slack.SearchParameters) (*slack.SearchMessages, error)
 	getUserGroupsContextFn          func(ctx context.Context, options ...slack.GetUserGroupsOption) ([]slack.UserGroup, error)
 }
@@ -2606,6 +2607,13 @@ func (m *mockSlackAPI) OpenConversationContext(ctx context.Context, params *slac
 		return m.openConversationContextFn(ctx, params)
 	}
 	return nil, false, false, nil
+}
+
+func (m *mockSlackAPI) CloseConversationContext(ctx context.Context, channelID string) (bool, bool, error) {
+	if m.closeConversationContextFn != nil {
+		return m.closeConversationContextFn(ctx, channelID)
+	}
+	return false, false, nil
 }
 
 func (m *mockSlackAPI) GetConversationInfoContext(ctx context.Context, input *slack.GetConversationInfoInput) (*slack.Channel, error) {

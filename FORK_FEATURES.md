@@ -91,6 +91,25 @@ entry to "Retired".
   internal/ui/mode_help_test.go (pinned help label updated)
 - Upstream-watch: ctrl+o, ctrl+i, jump list, navigate back, nav history key
 
+## close-dm: `x` in the sidebar and `/close` close a DM
+- Status: active
+- Added: 2026-10-23
+- Summary: With the sidebar focused and the cursor on a DM or group DM, `x`
+  closes it (Slack's conversations.close) with no confirmation; on any other
+  channel it explains that only DMs can be closed. `/close` does the same for
+  the conversation it is typed in. The row leaves the sidebar when Slack
+  confirms, a closed DM stays in the finder, and a new message reopens it.
+  Closes made from other Slack clients (im_close, mpim_close) also remove the
+  row. If the active DM is closed its row goes but the pane stays until you
+  navigate away.
+- Files: internal/slack/close_fork.go (+ test), internal/slack/client.go (interface
+  method), internal/slack/events.go (one case), internal/core/ports.go and adapters.go,
+  internal/ui/close_conversation.go (+ test), internal/ui/sidebar/remove_item_fork.go (+ test),
+  internal/ui/app.go (reducer chain), internal/ui/mode_normal.go (key case),
+  internal/ui/slash_command.go (`/close`), cmd/slk/close_conversation.go (+ test), cmd/slk/main.go (one line),
+  pinned tests updated in internal/slack/client_test.go and internal/ui/slash_builtins_test.go
+- Upstream-watch: close dm, close conversation, conversations.close, /close, hide dm
+
 ## Retired
 
 None.

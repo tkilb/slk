@@ -689,6 +689,9 @@ func dispatchWebSocketEvent(data []byte, handler EventHandler) {
 			handler.OnConversationOpened(evt.Channel)
 		}
 
+	case "im_close", "mpim_close": // fork: close-dm
+		dispatchConversationClosed(data, handler)
+
 	case "thread_marked":
 		var evt wsThreadMarkedEvent
 		if err := json.Unmarshal(data, &evt); err != nil {

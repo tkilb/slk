@@ -542,7 +542,7 @@ func TestSlashBuiltin_RefusalFromTheThreadComposerGivesTheTextBackThere(t *testi
 }
 
 func TestSlashUnsupportedBuiltins(t *testing.T) {
-	for _, name := range []string{"/leave", "/close", "/part"} {
+	for _, name := range []string{"/leave", "/part"} { // fork: /close is implemented (close-dm)
 		t.Run(name, func(t *testing.T) {
 			a, _ := slashApp(t, nil)
 			a.compose.SetValue(name)
