@@ -1,12 +1,15 @@
 // internal/ui/fork_search.go
 //
-// Fork features sidebar-search and thread-search: `/`, Esc, n and N depend on
+// Fork features sidebar-search, thread-search and sidebar-section-jump: `/`, Esc, n, N, { and } depend on
 // which panel has focus. Normal mode calls these hooks first; each reports
 // whether it handled the key, and false falls through to the stock behavior
 // (channel search on the messages pane).
 package ui
 
-import tea "charm.land/bubbletea/v2"
+import (
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+)
 
 // forkSlashSearch routes `/` by the focused panel.
 func (a *App) forkSlashSearch() bool {
@@ -72,4 +75,28 @@ func editQuery(query string, msg tea.KeyMsg) (string, bool) {
 		query += s
 	}
 	return query, true
+}
+
+// Fork feature sidebar-section-jump: `{` and `}` jump the sidebar cursor to
+// the previous and next section header.
+var (
+	forkPrevSection = key.NewBinding(key.WithKeys("{"), key.WithHelp("{", "previous section"))
+	forkNextSection = key.NewBinding(key.WithKeys("}"), key.WithHelp("}", "next section"))
+)
+
+// forkSectionJump handles `{` and `}` while the sidebar has focus and reports
+// whether the key was one of them. A jump past either end is a no-op.
+func (a *App) forkSectionJump(msg tea.KeyMsg) bool {
+	if a.focusedPanel != PanelSidebar {
+		return false
+	}
+	switch {
+	case key.Matches(msg, forkNextSection):
+		a.sidebar.JumpSection(1)
+	case key.Matches(msg, forkPrevSection):
+		a.sidebar.JumpSection(-1)
+	default:
+		return false
+	}
+	return true
 }

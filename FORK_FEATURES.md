@@ -66,6 +66,18 @@ entry to "Retired".
   internal/ui/mode_normal_keys_test.go (pinned `/` case updated)
 - Upstream-watch: thread search, search thread, search in thread, find in thread
 
+## sidebar-section-jump: `{` and `}` jump between sidebar categories
+- Status: active
+- Added: 2026-10-23
+- Summary: With the sidebar focused, `}` moves the cursor to the next section
+  header and `{` to the previous section's header (from a channel row, the
+  section before the one it is in). Jumps stop at either end. Other panels
+  ignore the keys.
+- Files: internal/ui/sidebar/model.go (`JumpSection`), internal/ui/sidebar/jump_section_fork_test.go,
+  internal/ui/fork_search.go, internal/ui/mode_section_jump_test.go,
+  internal/ui/mode_normal.go (hook)
+- Upstream-watch: next section, previous section, jump section, jump category
+
 ## Retired
 
 None.

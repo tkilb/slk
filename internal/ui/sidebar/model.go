@@ -846,6 +846,41 @@ func (m *Model) rowShown(section, channelID string) bool {
 	return m.collapseUnfocused && channelID != "" && channelID == m.activeID
 }
 
+// JumpSection moves the cursor to the header of the next (dir > 0) or
+// previous (dir < 0) section and reports whether it moved. "Previous" is the
+// section before the one the cursor is in, not the cursor's own header; from
+// the Threads or Activity rows only "next" moves (to the first section).
+func (m *Model) JumpSection(dir int) bool {
+	target := -1
+	if dir > 0 {
+		for i := m.cursor + 1; i < len(m.nav); i++ {
+			if m.nav[i].kind == navHeader {
+				target = i
+				break
+			}
+		}
+	} else {
+		own := -1 // header of the section the cursor is in
+		for i := 0; i <= m.cursor && i < len(m.nav); i++ {
+			if m.nav[i].kind == navHeader {
+				own = i
+			}
+		}
+		for i := own - 1; i >= 0; i-- {
+			if m.nav[i].kind == navHeader {
+				target = i
+				break
+			}
+		}
+	}
+	if target < 0 {
+		return false
+	}
+	m.cursor = target
+	m.dirty()
+	return true
+}
+
 // ToggleCollapseSelected toggles the section currently under the cursor.
 // No-op if the cursor isn't on a section header.
 func (m *Model) ToggleCollapseSelected() bool {
