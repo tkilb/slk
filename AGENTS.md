@@ -339,3 +339,28 @@ implementation plans to `docs/superpowers/plans/`.
 
 Before opening a PR: `go build ./...`, `go vet ./...`, `go test ./... -race`,
 `gofmt -l .` empty.
+
+## Fork notes (tkilb/slk)
+
+Everything in this section is fork-only and sits at the end of the file so
+upstream edits to `AGENTS.md` rebase cleanly. This repository is a personal fork
+of `gammons/slk` (remote `upstream`). Custom features live on `main`, which is
+rebased onto `upstream/main`. Nothing is submitted back to upstream.
+
+- **Feature list:** `FORK_FEATURES.md` is the running list of fork-only
+  features. Keep it current.
+- **Sync:** the `rebase-upstream` skill (`.claude/skills/rebase-upstream/`).
+  Never merge `upstream/main` into `main`; history stays linear.
+- **Upstream watch:** `.github/workflows/upstream-watch.yml` opens an issue when
+  upstream commits mention a fork feature's keywords.
+
+When adding or changing a fork feature:
+
+1. Add or update its entry in `FORK_FEATURES.md` in the same commit.
+2. End the commit message body with a trailer `Fork-Feature: <id>` (the id from
+   `FORK_FEATURES.md`); the rebase skill uses it to trace conflicts.
+3. Prefer new files and new reducer, mode, or service entries over edits to
+   shared upstream code. Do not reformat or reorganize upstream code.
+4. Edit `AGENTS.md` only inside this section.
+5. Set `Upstream-watch:` keywords that upstream would plausibly use for the same
+   capability (commit subjects, command names, config keys).

@@ -1,0 +1,28 @@
+name: upstream-watch
+
+# Opens an issue (GitHub emails the repo owner) when upstream commits mention a
+# fork feature's keywords from FORK_FEATURES.md.
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    if: github.repository != 'gammons/slk'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan upstream for overlap
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash .github/scripts/upstream-watch.sh
