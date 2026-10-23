@@ -119,6 +119,9 @@ type Model struct {
 	// version increments on every state change that could alter View() output.
 	version int64
 
+	// search is the fork's client-side `/` search (search_fork.go).
+	search threadSearch
+
 	// imgRenderer is the inline-image rendering pipeline. Configured at
 	// startup via Model.SetImageContext (mirrors messages.Model). v1
 	// renders images inline (kitty + halfblock fully supported; sixel
@@ -252,6 +255,7 @@ func (m *Model) SetThread(parent messages.MessageItem, replies []messages.Messag
 		m.unreadBoundaryTS = ""
 	}
 	m.ClearSelection()
+	m.search = threadSearch{}
 	m.parent = parent
 	m.replies = replies
 	m.channelID = channelID
@@ -402,6 +406,7 @@ func (m *Model) UpsertSelfSentReply(msg messages.MessageItem) {
 // Clear resets all thread state.
 func (m *Model) Clear() {
 	m.ClearSelection()
+	m.search = threadSearch{}
 	m.parent = messages.MessageItem{}
 	m.replies = nil
 	m.channelID = ""
@@ -1366,6 +1371,7 @@ func (m *Model) renderContext() *messages.RenderContext {
 		Emoji:            m.emojiCtx,
 		Images:           m.imgRenderer,
 		ImageChannel:     m.channelID,
+		SearchTerms:      m.search.terms,
 		Nav:              m.nav,
 	}
 }

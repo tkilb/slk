@@ -565,15 +565,15 @@ func TestNormalModeKeys(t *testing.T) {
 			},
 		},
 		{
-			// mode_normal.go:100 -- v1 scopes `/` to the channel pane.
-			name:     "/ with the thread panel focused is a no-op",
+			// fork: thread-search -- `/` on the thread pane searches the thread.
+			name:     "/ with the thread panel focused opens the thread search",
 			opts:     normalOpts(),
 			setup:    focusThreadPanel,
 			key:      keyPress('/'),
-			wantMode: ModeNormal,
+			wantMode: ModeThreadSearch,
 			assert: func(t *testing.T, a *App, cmd tea.Cmd) {
-				if got := a.statusbar.Search(); got != "" {
-					t.Errorf("statusbar search = %q, want empty", got)
+				if got := a.statusbar.Search(); got != "/" {
+					t.Errorf("statusbar search = %q, want %q", got, "/")
 				}
 				if cmd != nil {
 					t.Errorf("cmd = %T, want nil", cmd)

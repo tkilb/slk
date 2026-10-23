@@ -23,6 +23,7 @@ const (
 	ModeUserProfile
 	ModeMarks
 	ModeSidebarFilter // fork: sidebar-search
+	ModeThreadSearch  // fork: thread-search
 )
 
 // IsModalOverlay reports whether the mode is a full-screen modal
@@ -67,6 +68,8 @@ func (m Mode) String() string {
 		return "SEARCH"
 	case ModeSidebarFilter:
 		return "FILTER"
+	case ModeThreadSearch:
+		return "SEARCH"
 	case ModeChannelFinder:
 		return "FIND"
 	case ModeReactionPicker:

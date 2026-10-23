@@ -44,10 +44,25 @@ entry to "Retired".
   it clears when focus leaves). With the messages pane focused it is the stock
   channel search. The thread pane is covered by `thread-search`.
 - Files: internal/ui/mode_sidebar_filter.go, internal/ui/mode_sidebar_filter_test.go,
-  internal/ui/mode_normal.go (two hook calls), internal/ui/mode.go,
+  internal/ui/fork_search.go (shared `/` routing), internal/ui/mode_normal.go (hook calls), internal/ui/mode.go,
   internal/ui/mode_handlers.go, internal/ui/sidebar/model.go,
   internal/ui/reducer_search_test.go and internal/ui/modekeys_test.go (fixture updates)
 - Upstream-watch: sidebar search, sidebar filter, filter channels, search sidebar
+
+## thread-search: `/` searches the thread when the thread pane has focus
+- Status: active
+- Added: 2026-10-23
+- Summary: With the thread pane focused, `/` searches the parent and loaded
+  replies as you type (client-side, word-prefix, case and accent insensitive,
+  all terms must match), highlights hits, and jumps the cursor. Enter keeps the
+  search so `n`/`N` step through matches with wraparound; the first Esc clears
+  it and a second Esc closes the thread as before.
+- Files: internal/ui/thread/search_fork.go, internal/ui/thread/search_fork_test.go,
+  internal/ui/thread/model.go (state field, reset in SetThread/Clear, render terms),
+  internal/ui/fork_search.go, internal/ui/mode_thread_search.go,
+  internal/ui/mode_thread_search_test.go, internal/ui/mode_normal.go (hooks),
+  internal/ui/mode_normal_keys_test.go (pinned `/` case updated)
+- Upstream-watch: thread search, search thread, search in thread, find in thread
 
 ## Retired
 

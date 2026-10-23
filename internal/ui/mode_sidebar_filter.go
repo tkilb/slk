@@ -15,17 +15,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-// forkSlashSearch routes `/` by the focused panel. It reports false when the
-// panel's `/` is not a fork behavior and the stock handler should run.
-func (a *App) forkSlashSearch() bool {
-	if a.focusedPanel != PanelSidebar {
-		return false
-	}
-	a.statusbar.SetSearch("/" + a.sidebar.Filter())
-	a.SetMode(ModeSidebarFilter)
-	return true
-}
-
 func handleSidebarFilterMode(a *App, msg tea.KeyMsg) tea.Cmd {
 	switch {
 	case key.Matches(msg, a.keys.Escape):
@@ -67,14 +56,4 @@ func (a *App) restoreSearchSegment() {
 		return
 	}
 	a.statusbar.SetSearch("")
-}
-
-// clearSidebarFilterOnEsc is Normal mode's Esc hook: it clears a committed
-// sidebar filter and reports whether it did, so the stock Esc steps skip.
-func (a *App) clearSidebarFilterOnEsc() bool {
-	if a.focusedPanel != PanelSidebar || a.sidebar.Filter() == "" {
-		return false
-	}
-	a.sidebar.ClearFilter()
-	return true
 }

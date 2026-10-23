@@ -118,7 +118,7 @@ func handleNormalMode(a *App, msg tea.KeyMsg) tea.Cmd {
 		a.enterCommandMode()
 
 	case key.Matches(msg, a.keys.Escape):
-		if a.clearSidebarFilterOnEsc() { // fork: sidebar-search
+		if a.forkClearOnEsc() { // fork: sidebar-search, thread-search
 			return nil
 		}
 		// An active `/` search absorbs the first Esc: clear it and
@@ -145,7 +145,7 @@ func handleNormalMode(a *App, msg tea.KeyMsg) tea.Cmd {
 		return nil
 
 	case key.Matches(msg, a.keys.SearchMode):
-		if a.forkSlashSearch() { // fork: sidebar-search
+		if a.forkSlashSearch() { // fork: sidebar-search, thread-search
 			return nil
 		}
 		// Spec scopes `/` to the channel message pane in v1: no-op
@@ -160,6 +160,12 @@ func handleNormalMode(a *App, msg tea.KeyMsg) tea.Cmd {
 
 	// n/N match navigation: like `/`, scoped to the channel message
 	// pane in v1 — a no-op while the thread panel has focus.
+	case key.Matches(msg, a.keys.SearchNext) && a.forkSearchStep(1): // fork: thread-search
+		return nil
+
+	case key.Matches(msg, a.keys.SearchPrev) && a.forkSearchStep(-1): // fork: thread-search
+		return nil
+
 	case key.Matches(msg, a.keys.SearchNext) && a.search != nil && a.focusedPanel != PanelThread:
 		return a.searchStep(1)
 
