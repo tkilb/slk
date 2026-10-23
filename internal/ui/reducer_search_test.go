@@ -24,7 +24,7 @@ func searchTestApp(t *testing.T) *App {
 	t.Helper()
 	// withSize(0, 0) preserves NewApp's unsized state: the original
 	// builder set no dimensions and these tests never render.
-	return newTestApp(t,
+	a := newTestApp(t,
 		withSize(0, 0),
 		withActiveChannel("C1"),
 		withMessages(
@@ -33,6 +33,10 @@ func searchTestApp(t *testing.T) *App {
 			messages.MessageItem{TS: "1700000003.000000", Text: "deployment failed"},
 		),
 	)
+	// fork: `/` on the sidebar filters the sidebar, so these channel-search
+	// tests start with the messages pane focused.
+	a.focusedPanel = PanelMessages
+	return a
 }
 
 func resultsMsg(tses ...string) ChannelSearchResultsMsg {

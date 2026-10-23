@@ -561,6 +561,11 @@ func (m *Model) SetFocused(focused bool) {
 	key, hadKey := m.currentCursorKey()
 	m.focused = focused
 	if m.collapseUnfocused {
+		if !focused && m.filter != "" {
+			// A sidebar filter lives only while the user is in the sidebar.
+			m.filter = ""
+			m.rebuildFilter()
+		}
 		m.rebuildNavWithCursor(key, hadKey)
 		if !focused {
 			m.returnCursorToActiveRow(key, hadKey)
@@ -1175,6 +1180,40 @@ func (m *Model) SetFilter(filter string) {
 	m.cursor = 0
 	m.cacheValid = false
 	m.dirty()
+}
+
+// Filter returns the active name filter ("" when none).
+func (m *Model) Filter() string { return m.filter }
+
+// ClearFilter removes the name filter but, unlike SetFilter(""), keeps the
+// cursor on the row it is on, so a user who filtered to a channel stays
+// there.
+func (m *Model) ClearFilter() {
+	if m.filter == "" {
+		return
+	}
+	key, hadKey := m.currentCursorKey()
+	m.filter = ""
+	m.rebuildFilter()
+	m.rebuildNavWithCursor(key, hadKey)
+	m.cacheValid = false
+	m.dirty()
+}
+
+// SelectFirstChannel moves the cursor to the first channel row and reports
+// whether there was one. Used after a filter change, where SetFilter leaves
+// the cursor on the Threads row.
+func (m *Model) SelectFirstChannel() bool {
+	for i, n := range m.nav {
+		if n.kind == navChannel {
+			if m.cursor != i {
+				m.cursor = i
+				m.dirty()
+			}
+			return true
+		}
+	}
+	return false
 }
 
 func (m *Model) VisibleItems() []ChannelItem {

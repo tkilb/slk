@@ -36,6 +36,19 @@ entry to "Retired".
   internal/ui/fork_sidebar.go, cmd/slk/main.go
 - Upstream-watch: collapse sidebar, auto-collapse, sidebar focus, collapse sections
 
+## sidebar-search: `/` filters the sidebar when it has focus
+- Status: active
+- Added: 2026-10-23
+- Summary: `/` is context sensitive. With the sidebar focused it opens a live
+  name filter (Enter keeps it for j/k/Enter on the matches, Esc clears it, and
+  it clears when focus leaves). With the messages pane focused it is the stock
+  channel search. The thread pane is covered by `thread-search`.
+- Files: internal/ui/mode_sidebar_filter.go, internal/ui/mode_sidebar_filter_test.go,
+  internal/ui/mode_normal.go (two hook calls), internal/ui/mode.go,
+  internal/ui/mode_handlers.go, internal/ui/sidebar/model.go,
+  internal/ui/reducer_search_test.go and internal/ui/modekeys_test.go (fixture updates)
+- Upstream-watch: sidebar search, sidebar filter, filter channels, search sidebar
+
 ## Retired
 
 None.
