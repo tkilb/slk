@@ -110,6 +110,16 @@ entry to "Retired".
   pinned tests updated in internal/slack/client_test.go and internal/ui/slash_builtins_test.go
 - Upstream-watch: close dm, close conversation, conversations.close, /close, hide dm
 
+## cmd-k-finder: Cmd+K opens the channel finder
+- Status: active
+- Added: 2026-10-27
+- Summary: `super+k` (Cmd+K on macOS) opens the channel finder in normal mode,
+  alongside `ctrl+t` and `ctrl+p`. It needs a terminal that reports the super
+  modifier (kitty keyboard protocol: kitty, ghostty, wezterm, recent iTerm2);
+  elsewhere the terminal swallows Cmd+K.
+- Files: internal/ui/keys.go (one key on `FuzzyFinderAlt`), internal/ui/cmdk_fork_test.go
+- Upstream-watch: cmd+k, super+k, quick switcher, channel switcher key
+
 ## Retired
 
 None.
