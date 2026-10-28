@@ -68,6 +68,17 @@ func Parse(rawURL string) (Permalink, bool) {
 	}, true
 }
 
+// Build is the inverse of Parse: it assembles the archive permalink for a
+// message from the workspace subdomain, channel and message ts. It returns
+// "" when any part is missing or ts is not "<seconds>.<micros>".
+func Build(subdomain, channelID, ts string) string {
+	secs, micros, ok := strings.Cut(ts, ".")
+	if subdomain == "" || channelID == "" || !ok || secs == "" || micros == "" {
+		return ""
+	}
+	return "https://" + subdomain + ".slack.com/archives/" + channelID + "/p" + secs + micros
+}
+
 // HuddleURL builds the deep link Slack's own "Copy huddle link"
 // produces for a conversation: https://app.slack.com/huddle/<TEAM>/<CHANNEL>.
 // The channel may be a regular channel (C), a group DM (G) or a DM (D);

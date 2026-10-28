@@ -17,6 +17,7 @@ import (
 	"github.com/gammons/slk/internal/debuglog"
 	"github.com/gammons/slk/internal/slack/mrkdwn"
 	"github.com/gammons/slk/internal/slackhttp"
+	"github.com/gammons/slk/internal/slackurl"
 	"github.com/gorilla/websocket"
 	"github.com/slack-go/slack"
 )
@@ -1372,6 +1373,13 @@ func (c *Client) GetPermalink(ctx context.Context, channelID, ts string) (string
 		Ts:      ts,
 	})
 	if err != nil {
+		// Enterprise Grid orgs can block chat.getPermalink for this
+		// token. The URL is deterministic, so build it locally.
+		if strings.Contains(err.Error(), "enterprise_is_restricted") {
+			if built := slackurl.Build(c.TeamSubdomain(), channelID, ts); built != "" {
+				return built, nil
+			}
+		}
 		return "", fmt.Errorf("getting permalink: %w", err)
 	}
 	return url, nil
