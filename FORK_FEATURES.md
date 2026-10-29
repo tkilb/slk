@@ -131,6 +131,15 @@ entry to "Retired".
   internal/ui/testdata/golden/dialog_help*.ansi, wiki/Keybindings.md
 - Upstream-watch: quit key, quit without confirmation, close thread view, keys.go Quit
 
+## no-outbound-typing: slk never tells Slack you are typing
+- Status: active
+- Added: 2026-10-29
+- Summary: Typing in either composer no longer sends a `typing` event over
+  the WebSocket, so other people never see you as typing. Incoming typing
+  indicators from other users still show.
+- Files: internal/ui/mode_insert.go, internal/ui/seams_test.go
+- Upstream-watch: typing indicator, send typing, typing_indicators, typingOut
+
 ## Retired
 
 None.

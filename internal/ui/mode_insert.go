@@ -236,7 +236,6 @@ func handleInsertMode(a *App, msg tea.KeyMsg) tea.Cmd {
 		}
 		var cmd tea.Cmd
 		a.threadCompose, cmd = a.threadCompose.Update(msg)
-		a.typingOut.MaybeSend(a.threadPanel.ChannelID())
 		return cmd
 	}
 
@@ -295,6 +294,5 @@ func handleInsertMode(a *App, msg tea.KeyMsg) tea.Cmd {
 
 	var cmd tea.Cmd
 	a.compose, cmd = a.compose.Update(msg)
-	a.typingOut.MaybeSend(a.activeChannelID)
 	return cmd
 }

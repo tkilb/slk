@@ -102,7 +102,7 @@ func TestSeam_StatusUnwiredStillAppliesLocally(t *testing.T) {
 	}
 }
 
-func TestSeam_TypingSendsForActiveChannel(t *testing.T) {
+func TestSeam_TypingNeverSentOutbound(t *testing.T) {
 	a := newTestApp(t, withChannels(sidebar.ChannelItem{ID: "C1", Name: "general", Type: "channel"}), withActiveChannel("C1"))
 	a.SetTypingEnabled(true)
 	sent := make(chan string, 4)
@@ -115,11 +115,8 @@ func TestSeam_TypingSendsForActiveChannel(t *testing.T) {
 
 	select {
 	case got := <-sent:
-		if got != "C1" {
-			t.Errorf("typing sent for %q, want C1", got)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("no typing event sent")
+		t.Errorf("typing sent for %q, want none (fork: no-outbound-typing)", got)
+	case <-time.After(200 * time.Millisecond):
 	}
 }
 
