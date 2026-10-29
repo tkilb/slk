@@ -1998,62 +1998,22 @@ func TestNormalModeKeys(t *testing.T) {
 		},
 
 		// -------------------------------------------------------------
-		// Arm 48: CloseThreadView `q` (mode_normal.go:290)
-		//
-		// NOTE for the keymap record: keys.go:98 binds `q` to
-		// CloseThreadView and keys.go:97 binds `Q` to QuitConfirm.
-		// Quit is ctrl+c ONLY (keys.go:96) and never reaches this
-		// handler -- App.handleKey intercepts it at app.go:708.
+		// Arm 48: QuitConfirm `q` quits immediately, no prompt.
 		// -------------------------------------------------------------
 		{
-			name:     "q closes a visible thread",
+			name:     "q quits without a prompt",
 			opts:     normalOpts(),
-			setup:    focusThreadPanel,
-			key:      keyPress('q'),
-			wantMode: ModeNormal,
-			assert: func(t *testing.T, a *App, cmd tea.Cmd) {
-				if a.threadVisible {
-					t.Error("thread still visible")
-				}
-				if cmd != nil {
-					t.Errorf("cmd = %T, want nil", cmd)
-				}
-			},
-		},
-		{
-			name: "q with no thread open does not quit",
-			opts: normalOpts(),
-			setup: func(t *testing.T, a *App) {
-				if a.threadVisible {
-					t.Fatal("precondition: thread should start hidden")
-				}
-			},
 			key:      keyPress('q'),
 			wantMode: ModeNormal,
 			assert: func(t *testing.T, a *App, cmd tea.Cmd) {
 				if a.confirmPrompt.IsVisible() {
-					t.Error("quit confirm opened: lowercase q must not quit")
+					t.Error("quit confirm opened: q must quit directly")
 				}
-				if cmd != nil {
-					t.Errorf("cmd = %T, want nil", cmd)
+				if cmd == nil {
+					t.Fatal("cmd = nil, want tea.Quit")
 				}
-			},
-		},
-
-		// -------------------------------------------------------------
-		// Arm 49: QuitConfirm `Q` (mode_normal.go:300)
-		// -------------------------------------------------------------
-		{
-			name:     "Q opens the quit confirm prompt",
-			opts:     normalOpts(),
-			key:      keyPress('Q'),
-			wantMode: ModeConfirm,
-			assert: func(t *testing.T, a *App, cmd tea.Cmd) {
-				if !a.confirmPrompt.IsVisible() {
-					t.Error("quit confirm not visible")
-				}
-				if cmd != nil {
-					t.Errorf("cmd = %T, want nil", cmd)
+				if _, ok := cmd().(tea.QuitMsg); !ok {
+					t.Errorf("cmd() = %T, want tea.QuitMsg", cmd())
 				}
 			},
 		},

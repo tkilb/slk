@@ -120,6 +120,17 @@ entry to "Retired".
 - Files: internal/ui/keys.go (one key on `FuzzyFinderAlt`), internal/ui/cmdk_fork_test.go
 - Upstream-watch: cmd+k, super+k, quick switcher, channel switcher key
 
+## quit-on-q: `q` quits immediately
+- Status: active
+- Added: 2026-10-29
+- Summary: In normal mode `q` quits slk with no confirmation. It replaces
+  upstream's `Q` (quit with confirmation) and `q` (close thread view); `Q` now
+  does nothing. Ctrl+C still shows the confirm prompt.
+- Files: internal/ui/keys.go, internal/ui/mode_normal.go, internal/ui/app.go
+  (comments), internal/ui/app_test.go, internal/ui/mode_normal_keys_test.go,
+  internal/ui/testdata/golden/dialog_help*.ansi, wiki/Keybindings.md
+- Upstream-watch: quit key, quit without confirmation, close thread view, keys.go Quit
+
 ## Retired
 
 None.

@@ -361,6 +361,15 @@ set to `DISABLED`.
 - **Upstream watch:** `.github/workflows/upstream-watch.yml` opens an issue when
   upstream commits mention a fork feature's keywords.
 
+**MUST: every change that makes this fork behave differently from upstream is a
+fork feature, and its `FORK_FEATURES.md` entry is part of the change, not a
+follow-up.** That includes small ones: a rebound key, a removed binding, a
+changed default, a new command. Before reporting any such change as done, and
+before committing it, confirm that `FORK_FEATURES.md` has a new or updated entry
+and that the commit message carries the `Fork-Feature:` trailer. A change
+without both is incomplete. If you are unsure whether a change is fork-only,
+treat it as one.
+
 When adding or changing a fork feature:
 
 1. Add or update its entry in `FORK_FEATURES.md` in the same commit.

@@ -2440,103 +2440,28 @@ func TestHandleInsertMode_Up_OnSecondLine_ForwardsToTextarea(t *testing.T) {
 	}
 }
 
-// --- quit bindings: Q (confirm) / Ctrl+C (confirm); q (close thread, else no-op) ---
+// --- quit bindings: q (immediate) / Ctrl+C (confirm) ---
 
-func TestNormalMode_CapitalQ_OpensConfirmPrompt(t *testing.T) {
-	// Q took over what lowercase q used to do: pop the centered
-	// quit-confirm overlay. The immediate-quit feature is gone —
-	// Ctrl+C still pops the same confirm, and ungraceful exits go
-	// through closing the terminal.
+func TestNormalMode_LowercaseQ_QuitsImmediately(t *testing.T) {
+	app := NewApp()
+	cmd := app.handleNormalMode(tea.KeyPressMsg{Code: 'q', Text: "q"})
+	if cmd == nil {
+		t.Fatal("q should return a quit command")
+	}
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatal("q should quit")
+	}
+	if app.confirmPrompt.IsVisible() {
+		t.Error("q must not open the confirm prompt")
+	}
+}
+
+func TestNormalMode_CapitalQ_DoesNotQuit(t *testing.T) {
 	app := NewApp()
 	cmd := app.handleNormalMode(tea.KeyPressMsg{Code: 'Q', Text: "Q"})
 	if cmd != nil {
 		if _, ok := cmd().(tea.QuitMsg); ok {
-			t.Fatal("Q should NOT quit immediately; expected confirm prompt")
-		}
-	}
-	if !app.confirmPrompt.IsVisible() {
-		t.Fatal("Q should open the confirm prompt")
-	}
-	if app.mode != ModeConfirm {
-		t.Errorf("expected mode=ModeConfirm, got %v", app.mode)
-	}
-}
-
-func TestHandleKey_CtrlC_OpensConfirmPromptInsteadOfQuitting(t *testing.T) {
-	app := NewApp()
-	cmd := app.handleKey(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if cmd != nil {
-		if _, ok := cmd().(tea.QuitMsg); ok {
-			t.Fatal("Ctrl+C should not quit immediately; expected confirm prompt")
-		}
-	}
-	if !app.confirmPrompt.IsVisible() {
-		t.Fatal("Ctrl+C should open the confirm prompt")
-	}
-	if app.mode != ModeConfirm {
-		t.Errorf("expected mode=ModeConfirm, got %v", app.mode)
-	}
-}
-
-func TestHandleKey_CtrlC_DoesNotReopenWhilePromptVisible(t *testing.T) {
-	app := NewApp()
-	app.handleKey(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if !app.confirmPrompt.IsVisible() {
-		t.Fatal("precondition: prompt should be visible")
-	}
-	// A second Ctrl+C while the quit prompt is up should fall through
-	// to handleConfirmMode (where Enter confirms and Esc cancels) and
-	// must not reopen the prompt or change state in a way that breaks
-	// it.
-	cmd := app.handleKey(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	_ = cmd
-	if !app.confirmPrompt.IsVisible() {
-		t.Error("second Ctrl+C should leave the prompt up; not auto-cancel")
-	}
-}
-
-func TestNormalMode_LowercaseQ_ClosesThreadWhenOpen(t *testing.T) {
-	// Lowercase q is now a "close thread view" shortcut, mirroring
-	// vim's habit of using `q` to close ephemeral windows. When the
-	// thread panel is open, q closes it.
-	app := NewApp()
-	app.activeChannelID = "C1"
-	app.threadPanel.SetThread(messages.MessageItem{TS: "P1"}, nil, "C1", "P1")
-	app.threadVisible = true
-	app.focusedPanel = PanelThread
-
-	cmd := app.handleNormalMode(tea.KeyPressMsg{Code: 'q', Text: "q"})
-
-	if app.threadVisible {
-		t.Error("expected q to close the thread panel, but threadVisible is still true")
-	}
-	if app.confirmPrompt.IsVisible() {
-		t.Error("q with a thread open must not pop the quit-confirm prompt")
-	}
-	if cmd != nil {
-		if _, ok := cmd().(tea.QuitMsg); ok {
-			t.Fatal("q with thread open must not quit")
-		}
-	}
-}
-
-func TestNormalMode_LowercaseQ_NoOpWhenNoThread(t *testing.T) {
-	// With no thread visible, lowercase q is a no-op — it does NOT
-	// pop the quit confirm anymore. Q (and Ctrl+C) are the keys for
-	// quitting; q is reserved for closing transient panels.
-	app := NewApp()
-
-	cmd := app.handleNormalMode(tea.KeyPressMsg{Code: 'q', Text: "q"})
-
-	if app.confirmPrompt.IsVisible() {
-		t.Error("q with no thread visible must not pop the quit-confirm prompt")
-	}
-	if app.mode != ModeNormal {
-		t.Errorf("expected mode to stay ModeNormal, got %v", app.mode)
-	}
-	if cmd != nil {
-		if _, ok := cmd().(tea.QuitMsg); ok {
-			t.Fatal("q with no thread visible must not quit")
+			t.Fatal("Q must not quit")
 		}
 	}
 }

@@ -64,7 +64,7 @@
 | `Alt+y` / `Alt+Shift+y` | Normal | Next / previous theme (wraps; saved per workspace) |
 | `Ctrl+s` | Any | Set status (Active / Away / DND snooze) |
 | `q` | Normal | Close the thread pane (does nothing when none is open) |
-| `Q` | Normal | Quit (with confirmation) |
+| `q` | Normal | Quit (no confirmation) |
 | `Ctrl+c` | Any | Quit (with confirmation) |
 | `K` | Normal (message) | Show the selected message author's profile |
 | `e` | Profile dialog | Copy the email shown in the dialog (or click its 📋) |
