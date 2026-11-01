@@ -583,6 +583,7 @@ func run() error {
 	if editor, ok := ui.ResolveEditor(cfg.Compose.Editor); ok {
 		app.SetComposeEditor(editor)
 	}
+	app.SetGrammarService(newGrammarService(cfg.Grammar)) // fork: grammar-check
 
 	// AvatarFunc is wired below, after `router` is declared, because
 	// the lazy-fetch path needs router.Active().AvatarURLs to look up

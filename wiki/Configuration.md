@@ -63,6 +63,12 @@ quiet_hours = "22:00-08:00"   # planned
 [compose]
 editor = "nvim"   # Ctrl+E editor, used when $VISUAL and $EDITOR are unset
 
+[grammar]            # Ctrl+G in insert mode proofreads the draft via the `claude` CLI
+# model = "haiku"
+# timeout_seconds = 30
+# command = "claude"
+# prompt = "..."     # replaces the built-in proofreader prompt
+
 [cache]
 message_retention_days = 30
 max_db_size_mb = 500

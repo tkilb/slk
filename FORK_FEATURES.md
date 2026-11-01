@@ -140,6 +140,21 @@ entry to "Retired".
 - Files: internal/ui/mode_insert.go, internal/ui/seams_test.go
 - Upstream-watch: typing indicator, send typing, typing_indicators, typingOut
 
+## grammar-check: Ctrl+G proofreads the compose draft
+- Status: active
+- Added: 2026-10-29
+- Summary: In insert mode, Ctrl+G sends the focused composer's text to the
+  `claude` CLI (`claude -p`, no tools, no session) and replaces it with the
+  corrected text. A toast shows "Grammar correcting…" and then "Corrected". The
+  result is discarded if the draft changed while the check ran. Configure with
+  `[grammar]` (`model`, `timeout_seconds`, `prompt`, `command`). Draft text
+  leaves the machine for Anthropic, like any `claude` call.
+- Files: internal/core/fork_grammar.go, internal/grammar/, internal/ui/fork_grammar.go,
+  internal/ui/fork_grammar_test.go, internal/config/fork_grammar.go,
+  cmd/slk/fork_grammar.go, internal/ui/mode_insert.go, internal/ui/app.go,
+  cmd/slk/main.go, wiki/Configuration.md
+- Upstream-watch: grammar, spellcheck, spell check, proofread, ctrl+g
+
 ## Retired
 
 None.

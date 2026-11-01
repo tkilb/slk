@@ -128,6 +128,9 @@ func handleInsertMode(a *App, msg tea.KeyMsg) tea.Cmd {
 	if code == 'e' && mod == tea.ModCtrl {
 		return a.openComposeInEditor()
 	}
+	if code == 'g' && mod == tea.ModCtrl { // fork: grammar-check
+		return a.checkGrammar()
+	}
 
 	// Insert-mode shortcuts that operate on the active compose:
 	//   Ctrl+U  -> clear compose (text + attachments + uploading flag)

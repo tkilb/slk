@@ -21,6 +21,7 @@ type Config struct {
 	Cache         CacheConfig           `toml:"cache"`
 	Sidebar       Sidebar               `toml:"sidebar"`
 	Compose       Compose               `toml:"compose"`
+	Grammar       Grammar               `toml:"grammar"` // fork: grammar-check
 	Marks         Marks                 `toml:"marks"`
 	Sections      map[string]SectionDef `toml:"sections"`
 	Theme         Theme                 `toml:"theme"`

@@ -266,6 +266,11 @@ type App struct {
 	// until wired.
 	editor core.EditorService
 
+	// grammar proofreads the draft for Ctrl+G; nil until wired. See
+	// fork_grammar.go. grammarPending marks panels with a check in flight.
+	grammar        core.GrammarService
+	grammarPending map[Panel]bool
+
 	// desktop is the host OS: opening links and files, clipboard reads,
 	// paste-a-path stats, thread export and the status command. A no-op
 	// until wired.
@@ -1077,6 +1082,7 @@ func (a *App) update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		reduceTheme,
 		reduceNewMessagePicker,
 		reduceCloseConversation, // fork: close-dm
+		reduceGrammar,           // fork: grammar-check
 		reduceUserProfile,
 		reduceIO,
 		reduceMouse,
